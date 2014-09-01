@@ -7,7 +7,7 @@ module AlternUrl {
     export class Url {
         public scheme: string;
         public host: string;
-        public port: string;
+        public port: number;
         public path: string;
         public query: string;
         public fragment: string;
@@ -30,12 +30,9 @@ module AlternUrl {
                 //Absolute URL
                 this.kind = Kind.Absolute;
                 //Host and port are found with further parsing of the authority
-                var authorityMatches = authority.match(RegExp("([^:]*)(:(\d+))?"));
+                var authorityMatches = authority.match(RegExp("([^:]+)(:(\\d+))?"));
                 this.host = authorityMatches[1];
-                alert(authorityMatches[1]);
-                alert(authorityMatches[2]);
-                alert(authorityMatches[3]);
-                this.port = authorityMatches[3];
+                this.port = +authorityMatches[3];
             }
             else {
                 //Relative URL, nothing else to do
