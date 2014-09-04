@@ -108,7 +108,7 @@ module AlternUrl {
 		var keyValues = query.split("&");
 		for (var i = 0; i < keyValues.length; i++) {
 			var keyValuePair = keyValues[i].split("=");
-			dict[keyValuePair[0]] = keyValuePair[1];
+			dict[decodeURIComponent(keyValuePair[0])] = decodeURIComponent(keyValuePair[1]);
 		}
 		return dict;
 	}
@@ -117,19 +117,19 @@ module AlternUrl {
 		var query = "";
 		for(var key in dict){
 			if(dict.hasOwnProperty(key)) {
-				query += key + (dict[key] !== undefined ? "=" + dict[key] : "") + "&";
+				query += encodeURIComponent(key) + (dict[key] !== undefined ? "=" + encodeURIComponent(dict[key]) : "") + "&";
 			}
 		}
 		return query.substr(0, query.length - 1);
 	}
 }
 
-var urlString = "http://userblah@stackoverflow.com:785/questions/3213531/creating-a-new-location-object-in-javascript/3213643?this=test&that=test_too&bleeh#3213643";
+var urlString = "http://userblah@stackoverflow.com:785/questions/3213531/creating-a-new-location-object-in-javascript/3213643?this=test&that=test_too&bleeh&returnUrl=http%3A%2F%2Fexample.com%2Findex.html%3Fparam%3D1%26anotherParam%3D2#3213643";
 
 document.write("<strong>" + urlString + "</strong>");
  
 var url = new AlternUrl.Url(urlString);
- 
+
 var writeTableRow = function(key: string, value: any) {
 	document.write("<tr><td>" + key + "</td><td>" + value + "</td></tr>");
 };
@@ -155,5 +155,6 @@ writeTableRow("getParameter('this')", url.getParameter("this"));
 writeTableRow("getParameter('that')", url.getParameter("that"));
 writeTableRow("getParameter('bleeh')", url.getParameter("bleeh"));
 writeTableRow("getParameter('foo')", url.getParameter("foo"));
+writeTableRow("getParameter('returnUrl')", url.getParameter("returnUrl"));
 writeTableRow("toString()", url.toString());
 document.write("</table>")
