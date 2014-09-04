@@ -3,46 +3,46 @@ module AlternUrl {
         Absolute,
         Relative
     }
- 
+    
     export class Url {
         public scheme: string;
-		public userinfo: string;
+        public userinfo: string;
         public host: string;
         public port: number;
         public path: string;
         public query: string;
         public fragment: string;
- 
+
         public kind: Kind;
- 
+
         constructor(url: string) {
             //Parsing with regex from RFC 3986, Appendix B. - http://www.ietf.org/rfc/rfc3986.txt
             var matches = url.match(RegExp("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"));
- 
-            this.scheme = matches[2];			
+
+            this.scheme = matches[2];
             this.path = matches[5];
             this.query = matches[7];
             this.fragment = matches[9];
- 
+
             var authority = matches[4];
- 
+
             //Kind of Url, just like in the .NET Framework
             if (this.scheme !== undefined || authority !== undefined) {
                 //Absolute URL
                 this.kind = Kind.Absolute;
-				
-				//Check if the Scheme is "illegal"
-				if (this.scheme !== undefined && this.scheme.toUpperCase() != "HTTP" && this.scheme.toUpperCase() != "HTTPS") {					
-					throw "Scheme has to be http or https for an absolute URL";
-				}
-				else {
-					//Scheme is http or https
-				}
-                
-				//Userinfo, host and port are found with further parsing of the authority
+
+                //Check if the Scheme is "illegal"
+                if (this.scheme !== undefined && this.scheme.toUpperCase() != "HTTP" && this.scheme.toUpperCase() != "HTTPS") {
+                    throw "Scheme has to be http or https for an absolute URL";
+                }
+                else {
+                    //Scheme is http or https
+                }
+
+                //Userinfo, host and port are found with further parsing of the authority
                 var matches = authority.match(RegExp("(([^@]+)@)?([^:]+)(:(\\d+))?"));
                 this.userinfo = matches[2];
-				this.host = matches[3];
+                this.host = matches[3];
                 this.port = +matches[5];
             }
             else {
@@ -50,90 +50,90 @@ module AlternUrl {
                 this.kind = Kind.Relative;
             }
         }
- 
+
         toString = function (): string {
- 			//First we need to rebuild the authority part
-			var authority = "";
-			if (this.userinfo !== undefined) authority += this.userinfo + "@";
+            //First we need to rebuild the authority part
+            var authority = "";
+            if (this.userinfo !== undefined) authority += this.userinfo + "@";
             if (this.host !== undefined) authority += this.host;
             if (!isNaN(this.port)) authority += ":" + this.port;
 
             //Generating the URL string, following RFC 3986, 5.3 - http://www.ietf.org/rfc/rfc3986.txt
-            var url = ""; 
+            var url = "";
             if (this.scheme !== undefined) url += this.scheme + ":";
-			if (authority != "") url += "//" + authority;
+            if (authority != "") url += "//" + authority;
             url += this.path;
             if (this.query !== undefined) url += "?" + this.query;
             if (this.fragment !== undefined) url += "#" + this.fragment;
- 
+
             return url;
         }
-		
-		isHttps = function(): boolean {
-			if (this.kind == Kind.Absolute) {
-				return this.scheme == "https";
-			}
-			else {
-				throw "Not supported for a relative URL";
-			}
-		}
-		
-		hasParameter = function(param: string) : boolean {
-			var dict = buildDictionaryFromQuery(this.query);
-			return dict.hasOwnProperty(param); //Cannot simply check for undefined; case of parameter with no value
-		}
-		
-		getParameter = function(param: string) : string {
-			var dict = buildDictionaryFromQuery(this.query);
-			return dict[param];
-		}
-		
-		setParameter = function(param: string, value: string): Url {
-			var dict = buildDictionaryFromQuery(this.query);
-			dict[param] = value;
-			this.query = buildQueryFromDictionary(dict);
-			return this;
-		}
-		
-		removeParameter = function(param: string) : Url {
-			var dict = buildDictionaryFromQuery(this.query);
-			delete dict[param];
-			this.query = buildQueryFromDictionary(dict);
-			return this;
-		}
+
+		isHttps = function (): boolean {
+            if (this.kind == Kind.Absolute) {
+                return this.scheme == "https";
+            }
+            else {
+                throw "Not supported for a relative URL";
+            }
+        }
+
+		hasParameter = function (param: string): boolean {
+            var dict = buildDictionaryFromQuery(this.query);
+            return dict.hasOwnProperty(param); //Cannot simply check for undefined; case of parameter with no value
+        }
+
+		getParameter = function (param: string): string {
+            var dict = buildDictionaryFromQuery(this.query);
+            return dict[param];
+        }
+
+		setParameter = function (param: string, value: string): Url {
+            var dict = buildDictionaryFromQuery(this.query);
+            dict[param] = value;
+            this.query = buildQueryFromDictionary(dict);
+            return this;
+        }
+
+		removeParameter = function (param: string): Url {
+            var dict = buildDictionaryFromQuery(this.query);
+            delete dict[param];
+            this.query = buildQueryFromDictionary(dict);
+            return this;
+        }
     }
 
-	var buildDictionaryFromQuery = function(query: string): {} {
-		var dict = {};
-		var keyValues = query.split("&");
-		for (var i = 0; i < keyValues.length; i++) {
-			var keyValuePair = keyValues[i].split("=");
-			dict[decodeURIComponent(keyValuePair[0])] = decodeURIComponent(keyValuePair[1]);
-		}
-		return dict;
-	}
+    var buildDictionaryFromQuery = function (query: string): {} {
+        var dict = {};
+        var keyValues = query.split("&");
+        for (var i = 0; i < keyValues.length; i++) {
+            var keyValuePair = keyValues[i].split("=");
+            dict[decodeURIComponent(keyValuePair[0])] = decodeURIComponent(keyValuePair[1]);
+        }
+        return dict;
+    }
 
-	var buildQueryFromDictionary = function(dict: {}): string {
-		var query = "";
-		for(var key in dict){
-			if(dict.hasOwnProperty(key)) {
-				query += encodeURIComponent(key) + (dict[key] !== undefined ? "=" + encodeURIComponent(dict[key]) : "") + "&";
-			}
-		}
-		return query.substr(0, query.length - 1);
-	}
+	var buildQueryFromDictionary = function (dict: {}): string {
+        var query = "";
+        for (var key in dict) {
+            if (dict.hasOwnProperty(key)) {
+                query += encodeURIComponent(key) + (dict[key] !== undefined ? "=" + encodeURIComponent(dict[key]) : "") + "&";
+            }
+        }
+        return query.substr(0, query.length - 1);
+    }
 }
 
 var urlString = "http://userblah@stackoverflow.com:785/questions/3213531/creating-a-new-location-object-in-javascript/3213643?this=test&that=test_too&bleeh&returnUrl=http%3A%2F%2Fexample.com%2Findex.html%3Fparam%3D1%26anotherParam%3D2#3213643";
 
 document.write("<strong>" + urlString + "</strong>");
- 
+
 var url = new AlternUrl.Url(urlString);
 
-var writeTableRow = function(key: string, value: any) {
-	document.write("<tr><td>" + key + "</td><td>" + value + "</td></tr>");
+var writeTableRow = function (key: string, value: any) {
+    document.write("<tr><td>" + key + "</td><td>" + value + "</td></tr>");
 };
- 
+
 document.write("<table border='1'>")
 writeTableRow("<strong>Parsing</strong>", "");
 writeTableRow("Scheme", url.scheme);
